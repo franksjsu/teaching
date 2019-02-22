@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+.button {
+    background-color: Green;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+  .buttonBlue { background-color: Blue; }
+  .buttonYellow { background-color: Yellow;}
+  .buttonOrange { background-color: Orange; padding:10px 5px}
+  .buttonFlat { background-color: Blue; padding:5px 15px; }
+  .buttonWhite { background-color: White; padding:10px; color: Green; }
+  </style>
+</head>
+  <body>
+<center>
+<p style="font-size:16px; color:blue">
+<video id="myVideo" height=auto width="100%" onclick="PlayPause()" onplay="" controls >
+<source id="mp4Source" src="" type="video/mp4">
+  Does not work.  Please tell frank how you get here.
+</video>
+<br> 
+<label for="mp4file" class="button">Select Audio/Video File</label>
+<input type="file" id="mp4file" style="visibility:hidden" accept="video/*|audio/*" /> 
+<button class="button buttonOrange" id="begin" onclick="MarkBegin()" type="button">begin</button>
+<input type="text" id="mark" style="font-size:15px; text-align:center" size=5 value="00:00" onchange="changeBegin(this.value)">
+
+<button class="button" onclick="UpSpeed()" type="button">+</button>
+<button class="button buttonWhite" id="speed" title="click to reset" onclick="resetSpeed()" type="button">100%</button>
+<button class="button" onclick="DownSpeed()" type="button">-</button>
+<button class="button buttonOrange" id="back" title="back 5 sec" onclick="Back5()" type="button">back5s</button>
+<button class="button buttonBlue" id="restart" onclick="PlayRestart()" type="button">play</button>
+</center></p>
+    
+  <script>
+<!-- select and load A/V file from disk ---------------------------------------------------------------   -->
+function getmp4file(e) {
+  document.getElementById('mp4Source').src= window.URL.createObjectURL(e.target.files[0]);
+  ClearMarker();
+  vid.load(); 
+  vid.play();
+}
+document.getElementById('mp4file')
+  .addEventListener('change', getmp4file, false);
+  
+<!-- play position and speed control -------------------------------------------------------------   -->
+var beginTime = 0;	// mark the beginning 
+var vid = document.getElementById("myVideo");
+
+function changeBegin(hms) { 
+	var t = hms.split(':');
+	if (t.length==1) beginTime=t[0];
+	else beginTime = (+t[0])*60 + (+t[1]);
+	vid.pause();	// stop playing when change, move current to begin point
+	vid.currentTime = beginTime;	
+}
+
+<!--  space key toggle play/pause -->
+document.onkeypress = function(e){ if(e.keyCode==32) vid.paused ? vid.play() : vid.pause();};  
+function PlayPause() { vid.paused ? vid.play() : vid.pause();}  //touch toggle play/pause
+function PlayRestart() { vid.currentTime=beginTime; vid.play();}
+    
+<!-- play speed routines -->
+function ShowSpeed() {
+  document.getElementById("speed").innerHTML =
+    Math.round(vid.playbackRate*100) + "%";}
+function UpSpeed() { vid.playbackRate += .05; ShowSpeed();}
+function resetSpeed() { vid.playbackRate =1; ShowSpeed();}
+function DownSpeed() { vid.playbackRate -= .05; ShowSpeed(); }
+
+<!-- play positioning -->
+function Back5() { if (vid.currentTime > 5) vid.currentTime -= 5; }
+function Back() {
+  if (beginTime != 0) vid.currentTime = beginTime;
+  else if (vid.currentTime > 5) vid.currentTime -= 5;}
+function MarkBegin() { 
+	vid.pause(); if(beginTime==0) beginTime=vid.currentTime; else beginTime=0; ShowMarker(); }  
+	
+<!--  play range routines -->
+function ShowMarker() {
+  sec = Math.floor(beginTime%60);  // always show 2 digit on second
+  document.getElementById("mark").value =  Math.floor(beginTime/60)+ ":" + (sec > 9? sec : '0' + sec);}
+function ClearMarker() { beginTime=0; ShowMarker(); }
+</script>
+</body>
+</html>
